@@ -123,35 +123,34 @@ const Table = {
     getPredecessors: function(table, row, col) {
         const predecessors = [];
         for (let i = -1; i <= 1; i++) {
-            if (i === 0 && j === 0) continue;
-                predecessors.push(this.getValue(table, row -1 , col + i));
-            }
+            predecessors.push(this.getValue(table, row -1 , col + i));          
         }
         return predecessors;
     },
     
-    /* no starting conditions yet, so starting from column 1 , ending at 23*/
+    /* no starting conditions yet, so starting from column 1 , ending at 23 */
     drawRow: function(table, row) {
+        const cols = table[0].length;
         for (let j = 1; j < cols - 1; j++) {
-            drawPixel(table, row, j);
-        },
-    }, 
+            this.drawPixel(table, row, j);
+        }
+    },
 
-    
     drawPixel: function(table, row, col) {
         const predecessors = this.getPredecessors(table, row, col);
-        if (predecessors[0] + predecessors[1]  predecessors[2] === 1) {
+        if (predecessors[0] + predecessors[1] + predecessors[2] === 1) {
             this.setValue(table, row, col, 1);
-
         } else {
             this.setValue(table, row, col, 0);
         }
-
     },
     
-    for (let i = 1; i < rows; i++) {
-        this.drawRow(table, i);
-    }
+    /*?  Draw entire table based on first row */
+    drawTable: function(table) {
+        for (let i = 1; i < table.length; i++) {
+            this.drawRow(table, i);
+        }
+    },
 
     /**
      * Print the table to console

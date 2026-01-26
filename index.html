@@ -228,6 +228,12 @@
 
         // Generate button - read entire table and update display
         document.getElementById('generateBtn').addEventListener('click', function() {
+            // Run drawTable method to apply transformation algorithm
+            Table.drawTable(gridData);
+            
+            // Save the modified table
+            saveGridData();
+            
             // Read entire table and fill in white and black fields for rows under first row
             for (let row = 1; row < ROWS; row++) {
                 for (let col = 0; col < COLS; col++) {
