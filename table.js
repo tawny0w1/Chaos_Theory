@@ -122,16 +122,30 @@ const Table = {
 
     getPredecessors: function(table, row, col) {
         const predecessors = [];
-        for (let i = -1; i <= 1; i++) {
-            predecessors.push(this.getValue(table, row -1 , col + i));          
+        if (col > 0 && col < table[0].length -1) {
+            for (let i = -1; i <= 1; i++) {
+                predecessors.push(this.getValue(table, row -1 , col + i));          
+            } 
+        }
+        if (col === 0){
+              predecessors.push(0);    
+              for (let i = 0; i <= 1; i++) {
+                predecessors.push(this.getValue(table, row -1 , col + i));          
+            } 
+        }    
+        if (col === table[0].length -1){ 
+              for (let i = -1; i <= 0; i++) {
+                predecessors.push(this.getValue(table, row -1 , col + i));          
+            }
+            predecessors.push(0);   
         }
         return predecessors;
     },
     
-    /* no starting conditions yet, so starting from column 1 , ending at 23 */
+ 
     drawRow: function(table, row) {
         const cols = table[0].length;
-        for (let j = 1; j < cols - 1; j++) {
+        for (let j = 0; j < cols; j++) {
             this.drawPixel(table, row, j);
         }
     },
