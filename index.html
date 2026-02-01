@@ -28,6 +28,50 @@
             padding: 20px;
         }
 
+        .main-content {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            min-width: 150px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .checkbox-container label {
+            font-size: 12px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .slider {
+            width: 120px;
+        }
+
+        .slider-value {
+            font-size: 14px;
+            color: #666;
+            font-weight: bold;
+        }
+
         h1 {
             font-size: 24px;
             color: #333;
@@ -57,6 +101,7 @@
             background-color: white;
             cursor: pointer;
             transition: background-color 0.1s ease;
+            position: relative;
         }
 
         .cell.black {
@@ -71,13 +116,36 @@
             opacity: 0.8;
         }
 
+        .predecessor-number {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: red;
+            font-size: 10px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 1;
+        }
+
         /* First row styling */
         .cell.first-row {
             cursor: pointer;
+            background-color: #f0f0f0;
         }
 
         .cell.first-row:hover {
             background-color: #e0e0e0 !important;
+        }
+
+        /* Override for first row black cells */
+        .cell.first-row.black {
+            background-color: black !important;
+        }
+
+        /* Override for first row white cells */
+        .cell.first-row.white {
+            background-color: #f0f0f0 !important;
         }
 
         /* Other rows styling */
@@ -121,33 +189,58 @@
     <div class="container">
         <h1>Chaos Theory Simulation</h1>
         
-        <div class="table-wrapper">
-            <div class="grid" id="grid"></div>
+        <div class="main-content">
+            <div class="controls">
+                <div class="slider-container">
+                    <label for="sizeSlider">Table Size</label>
+                    <input type="range" id="sizeSlider" class="slider" min="3" max="100" value="9">
+                    <div class="slider-value" id="sliderValue">9x9</div>
+                </div>
+                <button id="changeSizeBtn">Change Table Size</button>
+                <div class="checkbox-container">
+                    <label for="showPredecessors">Show Predecessors</label>
+                    <input type="checkbox" id="showPredecessors">
+                </div>
+            </div>
+            
+            <div class="table-wrapper">
+                <div class="grid" id="grid"></div>
+            </div>
         </div>
 
         <div class="button-container">
             <button id="generateBtn">Generate</button>
-            <button id="resetBtn">Reset</button>
             <button id="clearBtn">Clear</button>
         </div>
 
         <div class="info">
             <p>Click on cells in the first row to toggle them.</p>
-            <p id="gridInfo">Grid: 24x24</p>
         </div>
     </div>
 
     <script src="table.js"></script>
     <script>
         // Configuration
-        const COLS = 25;
-        const ROWS = 25;
+        let COLS = 9;
+        let ROWS = 9;
         const STORAGE_KEY = 'grid_table_data';
+        const SIZE_STORAGE_KEY = 'grid_table_size';
 
         let gridData = [];
 
         // Initialize grid from localStorage or create new
         function initializeGrid() {
+            // Load table size from localStorage, default to 9
+            const storedSize = localStorage.getItem(SIZE_STORAGE_KEY);
+            if (storedSize) {
+                const size = parseInt(storedSize);
+                COLS = size;
+                ROWS = size;
+                // Update slider to match stored size
+                document.getElementById('sizeSlider').value = size;
+                document.getElementById('sliderValue').textContent = size + 'x' + size;
+            }
+            
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
                 gridData = JSON.parse(stored);
@@ -160,6 +253,8 @@
         // Render the grid on the page
         function renderGrid() {
             const grid = document.getElementById('grid');
+            const showPredecessors = document.getElementById('showPredecessors').checked;
+            
             grid.innerHTML = '';
             grid.style.gridTemplateColumns = `repeat(${COLS}, 1fr)`;
             grid.style.gridTemplateRows = `repeat(${ROWS}, 1fr)`;
@@ -182,6 +277,17 @@
 
                     cell.dataset.row = row;
                     cell.dataset.col = col;
+
+                    // Add predecessor number for rows >= 1 if checkbox is checked
+                    if (showPredecessors && row >= 1) {
+                        const predecessors = Table.getPredecessors(gridData, row, col);
+                        const predecessorCount = predecessors.filter(p => p === 1).length;
+                        
+                        const numberDiv = document.createElement('div');
+                        numberDiv.className = 'predecessor-number';
+                        numberDiv.textContent = predecessorCount;
+                        cell.appendChild(numberDiv);
+                    }
 
                     // Only first row is clickable
                     if (row === 0) {
@@ -218,6 +324,26 @@
                 } else {
                     cell.classList.add('white');
                 }
+                
+                // Update predecessor number if showing and row >= 1
+                const showPredecessors = document.getElementById('showPredecessors').checked;
+                const existingNumber = cell.querySelector('.predecessor-number');
+                
+                if (showPredecessors && row >= 1) {
+                    const predecessors = Table.getPredecessors(gridData, row, col);
+                    const predecessorCount = predecessors.filter(p => p === 1).length;
+                    
+                    if (existingNumber) {
+                        existingNumber.textContent = predecessorCount;
+                    } else {
+                        const numberDiv = document.createElement('div');
+                        numberDiv.className = 'predecessor-number';
+                        numberDiv.textContent = predecessorCount;
+                        cell.appendChild(numberDiv);
+                    }
+                } else if (existingNumber) {
+                    existingNumber.remove();
+                }
             }
         }
 
@@ -241,18 +367,51 @@
                 }
             }
         });
-
+        /*   
         // Reset button - restore from localStorage
         document.getElementById('resetBtn').addEventListener('click', function() {
             localStorage.removeItem(STORAGE_KEY);
             gridData = Table.create(ROWS, COLS);
             renderGrid();
         });
+        */
 
         // Clear button - set all to 0
         document.getElementById('clearBtn').addEventListener('click', function() {
             gridData = Table.create(ROWS, COLS);
             saveGridData();
+            renderGrid();
+        });
+
+        // Slider event listener
+        document.getElementById('sizeSlider').addEventListener('input', function(event) {
+            const size = parseInt(event.target.value);
+            document.getElementById('sliderValue').textContent = size + 'x' + size;
+        });
+
+        // Show predecessors checkbox event listener
+        document.getElementById('showPredecessors').addEventListener('change', function() {
+            renderGrid();
+        });
+
+        // Change table size button
+        document.getElementById('changeSizeBtn').addEventListener('click', function() {
+            const newSize = parseInt(document.getElementById('sizeSlider').value);
+            
+            // Update dimensions
+            COLS = newSize;
+            ROWS = newSize;
+            
+            // Save table size to localStorage
+            localStorage.setItem(SIZE_STORAGE_KEY, newSize.toString());
+            
+            // Clear localStorage for grid data
+            localStorage.removeItem(STORAGE_KEY);
+            
+            // Create new grid data
+            gridData = Table.create(ROWS, COLS);
+            
+            // Re-render the grid
             renderGrid();
         });
 
