@@ -101,7 +101,7 @@
 
         .grid {
             width: 100%;
-            height: 100%;
+            aspect-ratio: 1;
             display: grid;
             gap: 0;
             background-color: white;
@@ -204,6 +204,108 @@
             margin: 0;
             align-self: center;
         }
+
+        .settings-button-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .settings-panel {
+            width: 100%;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease, margin 0.3s ease;
+            margin: 0;
+        }
+
+        .settings-panel.open {
+            max-height: 350px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .settings-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .settings-controls {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .small-tables-container {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 10px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .small-grid {
+            width: 100%;
+            aspect-ratio: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 0;
+            background-color: white;
+            border: 1px solid #d3d3d3;
+            border-radius: 2px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .small-cell {
+            border: 1px solid #d3d3d3;
+            background-color: white;
+            cursor: pointer;
+            transition: background-color 0.1s ease;
+        }
+
+        .small-cell.black {
+            background-color: black;
+        }
+
+        .small-cell.white {
+            background-color: white;
+        }
+
+        .small-cell:hover {
+            opacity: 0.8;
+        }
+
+        .small-cell.non-clickable {
+            cursor: default;
+        }
+
+        .small-cell.non-clickable:hover {
+            opacity: 1;
+        }
+
+        /* Clickable cell styling (row 2, col 1) */
+        .small-cell.clickable {
+            background-color: #f0f0f0 !important;
+            cursor: pointer;
+        }
+
+        .small-cell.clickable:hover {
+            background-color: #e0e0e0 !important;
+            opacity: 1;
+        }
+
+        .small-cell.clickable.black {
+            background-color: black !important;
+        }
     </style>
 </head>
 <body>
@@ -214,20 +316,27 @@
             <div class="controls-row">
                 <button id="generateBtn">Generate</button>
                 <p class="info-inline">Click on cells in the first row to toggle them.</p>
-                <button id="clearBtn">Clear</button>
-                
+                <div class="settings-button-container">
+                    <button id="clearBtn">Clear</button>
+                    <button id="settingsBtn">Settings</button>
+                </div>
             </div>
             
-            <div class="controls-row">
-                <div class="slider-container">
-                    <label for="sizeSlider">Table Size</label>
-                    <input type="range" id="sizeSlider" class="slider" min="3" max="100" value="9">
-                    <div class="slider-value" id="sliderValue">9x9</div>
-                </div>
-                <button id="changeSizeBtn">Change Table Size</button>
-                <div class="checkbox-container">
-                    <input type="checkbox" id="showPredecessors">
-                    <label for="showPredecessors">Show Predecessors</label>
+            <div class="settings-panel" id="settingsPanel">
+                <div class="settings-content">
+                    <div class="settings-controls">
+                        <div class="slider-container">
+                            <label for="sizeSlider">Table Size</label>
+                            <input type="range" id="sizeSlider" class="slider" min="3" max="100" value="9">
+                            <div class="slider-value" id="sliderValue">9x9</div>
+                        </div>
+                        <button id="changeSizeBtn">Change Table Size</button>
+                        <div class="checkbox-container">
+                            <input type="checkbox" id="showPredecessors">
+                            <label for="showPredecessors">Show Predecessors</label>
+                        </div>
+                    </div>
+                    <div class="small-tables-container" id="smallTablesContainer"></div>
                 </div>
             </div>
         </div>
@@ -244,8 +353,10 @@
         let ROWS = 9;
         const STORAGE_KEY = 'grid_table_data';
         const SIZE_STORAGE_KEY = 'grid_table_size';
+        const SMALL_TABLES_STORAGE_KEY = 'small_tables_data';
 
         let gridData = [];
+        let smallTablesData = [];
 
         // Initialize grid from localStorage or create new
         function initializeGrid() {
@@ -266,7 +377,116 @@
             } else {
                 gridData = Table.create(ROWS, COLS);
             }
+
+            // Initialize small tables data
+            const storedSmallTables = localStorage.getItem(SMALL_TABLES_STORAGE_KEY);
+            if (storedSmallTables) {
+                smallTablesData = JSON.parse(storedSmallTables);
+            } else {
+                // Initialize with specified row 1 values (first row)
+                const row1Values = [
+                    [0, 0, 0],  // 000
+                    [0, 1, 0],  // 010
+                    [0, 0, 1],  // 001
+                    [1, 1, 0],  // 110
+                    [0, 1, 1],  // 011
+                    [1, 0, 1],  // 101
+                    [1, 1, 1],  // 111
+                    [1, 0, 0]   // 100
+                ];
+                
+                smallTablesData = [];
+                for (let i = 0; i < 8; i++) {
+                    const table = Table.create(2, 3);
+                    // Set row 0 with specified values
+                    for (let j = 0; j < 3; j++) {
+                        table[0][j] = row1Values[i][j];
+                    }
+                    smallTablesData.push(table);
+                }
+            }
+
             renderGrid();
+            renderSmallTables();
+        }
+
+        // Render small tables in settings panel
+        function renderSmallTables() {
+            const container = document.getElementById('smallTablesContainer');
+            container.innerHTML = '';
+
+            for (let tableIdx = 0; tableIdx < 8; tableIdx++) {
+                const tableDiv = document.createElement('div');
+                tableDiv.className = 'small-grid';
+                tableDiv.dataset.tableIndex = tableIdx;
+
+                for (let row = 0; row < 2; row++) {
+                    for (let col = 0; col < 3; col++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'small-cell';
+                        
+                        // Only row 1, column 1 is clickable
+                        const isClickable = (row === 1 && col === 1);
+                        if (isClickable) {
+                            cell.classList.add('clickable');
+                        } else {
+                            cell.classList.add('non-clickable');
+                        }
+                        
+                        const value = smallTablesData[tableIdx][row][col];
+                        if (value === 1) {
+                            cell.classList.add('black');
+                        } else {
+                            cell.classList.add('white');
+                        }
+
+                        cell.dataset.tableIndex = tableIdx;
+                        cell.dataset.row = row;
+                        cell.dataset.col = col;
+
+                        if (isClickable) {
+                            cell.addEventListener('click', handleSmallCellClick);
+                        }
+                        tableDiv.appendChild(cell);
+                    }
+                }
+
+                container.appendChild(tableDiv);
+            }
+        }
+
+        // Handle click on small table cells
+        function handleSmallCellClick(event) {
+            const tableIdx = parseInt(event.target.dataset.tableIndex);
+            const row = parseInt(event.target.dataset.row);
+            const col = parseInt(event.target.dataset.col);
+
+            // Toggle the value
+            smallTablesData[tableIdx][row][col] = smallTablesData[tableIdx][row][col] === 0 ? 1 : 0;
+
+            // Save to localStorage
+            saveSmallTablesData();
+
+            // Update cell display
+            updateSmallCell(tableIdx, row, col);
+        }
+
+        // Update a single small cell display
+        function updateSmallCell(tableIdx, row, col) {
+            const cell = document.querySelector(`[data-table-index="${tableIdx}"][data-row="${row}"][data-col="${col}"]`);
+            if (cell) {
+                cell.classList.remove('black', 'white');
+                if (smallTablesData[tableIdx][row][col] === 1) {
+                    cell.classList.add('black');
+                } else {
+                    cell.classList.add('white');
+                }
+            }
+        }
+
+        // Save small tables data to localStorage
+        function saveSmallTablesData() {
+            localStorage.setItem(SMALL_TABLES_STORAGE_KEY, JSON.stringify(smallTablesData));
         }
 
         // Render the grid on the page
@@ -386,6 +606,20 @@
                 }
             }
         });
+
+        // Settings button toggle
+        document.getElementById('settingsBtn').addEventListener('click', function() {
+            const settingsPanel = document.getElementById('settingsPanel');
+            const settingsBtn = document.getElementById('settingsBtn');
+            
+            settingsPanel.classList.toggle('open');
+            
+            if (settingsPanel.classList.contains('open')) {
+                settingsBtn.textContent = 'Hide Settings';
+            } else {
+                settingsBtn.textContent = 'Settings';
+            }
+        });
         /*   
         // Reset button - restore from localStorage
         document.getElementById('resetBtn').addEventListener('click', function() {
@@ -399,7 +633,32 @@
         document.getElementById('clearBtn').addEventListener('click', function() {
             gridData = Table.create(ROWS, COLS);
             saveGridData();
+            
+            // Also clear small tables but preserve row 1 values
+            const row1Values = [
+                [0, 0, 0],  // 000
+                [0, 1, 0],  // 010
+                [0, 0, 1],  // 001
+                [1, 1, 0],  // 110
+                [0, 1, 1],  // 011
+                [1, 0, 1],  // 101
+                [1, 1, 1],  // 111
+                [1, 0, 0]   // 100
+            ];
+            
+            smallTablesData = [];
+            for (let i = 0; i < 8; i++) {
+                const table = Table.create(2, 3);
+                // Set row 0 with specified values
+                for (let j = 0; j < 3; j++) {
+                    table[0][j] = row1Values[i][j];
+                }
+                smallTablesData.push(table);
+            }
+            saveSmallTablesData();
+            
             renderGrid();
+            renderSmallTables();
         });
 
         // Slider event listener
