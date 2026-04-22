@@ -244,6 +244,47 @@
             justify-content: center;
         }
 
+        .rules-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            width: 100%;
+            border-top: 1px solid #ddd;
+            border-bottom: 1px solid #ddd;
+            padding: 15px 0;
+            margin: 10px 0;
+        }
+
+        .rules-container > label {
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+        }
+
+        .rules-options {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .radio-item input[type="radio"] {
+            cursor: pointer;
+        }
+
+        .radio-item label {
+            font-weight: normal;
+            cursor: pointer;
+            margin: 0;
+        }
+
         .small-tables-container {
             display: grid;
             grid-template-columns: repeat(8, 1fr);
@@ -336,6 +377,23 @@
                             <label for="showPredecessors">Show Predecessors</label>
                         </div>
                     </div>
+                    <div class="rules-container">
+                        <label>Cellular Automata Rules:</label>
+                        <div class="rules-options">
+                            <div class="radio-item">
+                                <input type="radio" id="ruleCustom" name="rule" value="custom" checked>
+                                <label for="ruleCustom">Custom Rule</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="rule22" name="rule" value="22">
+                                <label for="rule22">Rule 22</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="rule30" name="rule" value="30">
+                                <label for="rule30">Rule 30</label>
+                            </div>
+                        </div>
+                    </div>
                     <div class="small-tables-container" id="smallTablesContainer"></div>
                 </div>
             </div>
@@ -357,6 +415,7 @@
 
         let gridData = [];
         let smallTablesData = [];
+        let currentRule = 'custom';
 
         // Initialize grid from localStorage or create new
         function initializeGrid() {
@@ -408,6 +467,7 @@
 
             renderGrid();
             renderSmallTables();
+            applyCurrentRule();
         }
 
         // Render small tables in settings panel
@@ -487,6 +547,61 @@
         // Save small tables data to localStorage
         function saveSmallTablesData() {
             localStorage.setItem(SMALL_TABLES_STORAGE_KEY, JSON.stringify(smallTablesData));
+        }
+
+        // Apply Custom Rule: All bottom row cells are blank (0)
+        function applyRuleCustom() {
+            for (let tableIdx = 0; tableIdx < 8; tableIdx++) {
+                smallTablesData[tableIdx][1][0] = 0;
+                smallTablesData[tableIdx][1][1] = 0;
+                smallTablesData[tableIdx][1][2] = 0;
+            }
+            saveSmallTablesData();
+            renderSmallTables();
+        }
+
+        // Apply Rule 22: Tables 0, 1, 2 middle cell (row 1, col 1) = 1
+        function applyRule22() {
+            // Clear all first
+            for (let tableIdx = 0; tableIdx < 8; tableIdx++) {
+                smallTablesData[tableIdx][1][0] = 0;
+                smallTablesData[tableIdx][1][1] = 0;
+                smallTablesData[tableIdx][1][2] = 0;
+            }
+            // Set Rule 22 tables
+            smallTablesData[1][1][1] = 1;
+            smallTablesData[2][1][1] = 1;
+            smallTablesData[3][1][1] = 1;
+            saveSmallTablesData();
+            renderSmallTables();
+        }
+
+        // Apply Rule 30: Tables 3, 4, 5, 6 middle cell (row 1, col 1) = 1
+        function applyRule30() {
+            // Clear all first
+            for (let tableIdx = 0; tableIdx < 8; tableIdx++) {
+                smallTablesData[tableIdx][1][0] = 0;
+                smallTablesData[tableIdx][1][1] = 0;
+                smallTablesData[tableIdx][1][2] = 0;
+            }
+            // Set Rule 30 tables
+            smallTablesData[2][1][1] = 1;
+            smallTablesData[3][1][1] = 1;
+            smallTablesData[4][1][1] = 1;
+            smallTablesData[5][1][1] = 1;
+            saveSmallTablesData();
+            renderSmallTables();
+        }
+
+        // Apply current rule
+        function applyCurrentRule() {
+            if (currentRule === 'custom') {
+                applyRuleCustom();
+            } else if (currentRule === '22') {
+                applyRule22();
+            } else if (currentRule === '30') {
+                applyRule30();
+            }
         }
 
         // Render the grid on the page
@@ -691,6 +806,14 @@
             
             // Re-render the grid
             renderGrid();
+        });
+
+        // Rule radio button listeners
+        document.querySelectorAll('input[name="rule"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                currentRule = this.value;
+                applyCurrentRule();
+            });
         });
 
         // Initialize on page load
