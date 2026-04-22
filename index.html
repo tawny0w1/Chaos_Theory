@@ -587,7 +587,7 @@
             // Set Rule 30 tables
             smallTablesData[2][1][1] = 1;
             smallTablesData[3][1][1] = 1;
-            smallTablesData[4][1][1] = 1;
+            smallTablesData[1][1][1] = 1;
             smallTablesData[5][1][1] = 1;
             saveSmallTablesData();
             renderSmallTables();
@@ -748,7 +748,7 @@
         document.getElementById('clearBtn').addEventListener('click', function() {
             gridData = Table.create(ROWS, COLS);
             saveGridData();
-            
+            /*   
             // Also clear small tables but preserve row 1 values
             const row1Values = [
                 [0, 0, 0],  // 000
@@ -760,7 +760,7 @@
                 [1, 0, 1],  // 101
                 [1, 1, 1]  // 111
             ];
-            
+           
             smallTablesData = [];
             for (let i = 0; i < 8; i++) {
                 const table = Table.create(2, 3);
@@ -771,9 +771,10 @@
                 smallTablesData.push(table);
             }
             saveSmallTablesData();
-            
+            */
             renderGrid();
             renderSmallTables();
+            
         });
 
         // Slider event listener
