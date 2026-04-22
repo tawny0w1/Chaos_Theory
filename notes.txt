@@ -1,0 +1,4 @@
+saveSmallTablesData - function to save small tables to local storage
+SMALL_TABLES_STORAGE_KEY - where small tables are stored
+
+smallTablesData - table of small tables

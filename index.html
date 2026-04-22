@@ -555,7 +555,7 @@
 
         // Update a single cell display
         function updateCell(row, col) {
-            const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+            const cell = document.querySelector(`#grid [data-row="${row}"][data-col="${col}"]`);
             if (cell) {
                 cell.classList.remove('black', 'white');
                 if (gridData[row][col] === 1) {

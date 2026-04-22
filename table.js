@@ -150,13 +150,20 @@ const Table = {
         }
     },
 
-    drawPixel: function(table, row, col) {
+    drawPixelrule22: function(table, row, col) {
         const predecessors = this.getPredecessors(table, row, col);
         if (predecessors[0] + predecessors[1] + predecessors[2] === 1) {
             this.setValue(table, row, col, 1);
         } else {
             this.setValue(table, row, col, 0);
         }
+    },
+    
+
+    drawPixel: function(table, row, col) {
+        const predecessors = this.getPredecessors(table, row, col);
+        let foundpixel = this.browseSmallTables(smallTablesData, predecessors);
+        this.setValue(table, row, col, foundpixel);
     },
     
     /*?  Draw entire table based on first row */
@@ -181,8 +188,18 @@ const Table = {
      */
     toString: function(table) {
         return table.map(row => row.join('')).join('\n');
-    }
-
-
+    },
+    
+    browseSmallTables: function(smallTablesData, predecessors) {
+        for (let i = 0; i < 8; i++) {
+            let table = smallTablesData[i]
+            if(table[0][0] === predecessors[0] &&
+                 table[0][1] === predecessors[1] 
+                 && table[0][2] === predecessors[2]){
+                    return table[1][1];
+            }
+        }          
+        return 0;
+    },
 
 };
