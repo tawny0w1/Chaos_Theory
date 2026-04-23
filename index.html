@@ -351,7 +351,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Chaos Theory Simulation - Rule 22</h1>
+        <h1>Cellular Automaton Simulation</h1>
         
         <div class="controls">
             <div class="controls-row">
@@ -381,11 +381,11 @@
                         <label>Cellular Automata Rules:</label>
                         <div class="rules-options">
                             <div class="radio-item">
-                                <input type="radio" id="ruleCustom" name="rule" value="custom" checked>
+                                <input type="radio" id="ruleCustom" name="rule" value="custom">
                                 <label for="ruleCustom">Custom Rule</label>
                             </div>
                             <div class="radio-item">
-                                <input type="radio" id="rule22" name="rule" value="22">
+                                <input type="radio" id="rule22" name="rule" value="22" checked>
                                 <label for="rule22">Rule 22</label>
                             </div>
                             <div class="radio-item">
@@ -415,7 +415,7 @@
 
         let gridData = [];
         let smallTablesData = [];
-        let currentRule = 'custom';
+        let currentRule = '22';
 
         // Initialize grid from localStorage or create new
         function initializeGrid() {
