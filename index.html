@@ -706,20 +706,31 @@
             localStorage.setItem(STORAGE_KEY, JSON.stringify(gridData));
         }
 
-        // Generate button - read entire table and update display
+        // Generate button - draw table row by row with animation
         document.getElementById('generateBtn').addEventListener('click', function() {
-            // Run drawTable method to apply transformation algorithm
-            Table.drawTable(gridData);
+            let currentRow = 1;
             
-            // Save the modified table
-            saveGridData();
-            
-            // Read entire table and fill in white and black fields for rows under first row
-            for (let row = 1; row < ROWS; row++) {
-                for (let col = 0; col < COLS; col++) {
-                    updateCell(row, col);
+            function drawNextRow(timestamp) {
+                if (currentRow < ROWS) {
+                    // Draw current row using Table.drawRow
+                    Table.drawRow(gridData, currentRow);
+                    
+                    // Update display for this row
+                    for (let col = 0; col < COLS; col++) {
+                        updateCell(currentRow, col);
+                    }
+                    
+                    currentRow++;
+                    // Request next frame
+                    requestAnimationFrame(drawNextRow);
+                } else {
+                    // All done, save data
+                    saveGridData();
                 }
             }
+            
+            // Start drawing from row 1
+            requestAnimationFrame(drawNextRow);
         });
 
         // Settings button toggle
