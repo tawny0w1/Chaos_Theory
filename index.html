@@ -356,7 +356,7 @@
         <div class="controls">
             <div class="controls-row">
                 
-                <p class="info-inline">Click on cells in the first row to change their color, then click Generate.</p>
+                <p class="info-inline">Click one or more cells in the first row to change their color, then click Generate.</p>
                 <div class="settings-button-container">
                     <button id="generateBtn">Generate</button>
                     <button id="clearBtn">Clear</button>
@@ -417,6 +417,7 @@
         let gridData = [];
         let smallTablesData = [];
         let currentRule = '22';
+        let firstGenerationComplete = false;
 
         // Initialize grid from localStorage or create new
         function initializeGrid() {
@@ -733,6 +734,32 @@
             }, 3000);
         }
 
+        // Custom blue alert function
+        function showBlueAlert(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: #cce5ff;
+                border: 2px solid #0047ab;
+                color: #0047ab;
+                padding: 20px 30px;
+                font-size: 16px;
+                font-weight: bold;
+                border-radius: 8px;
+                z-index: 10000;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            `;
+            alertDiv.textContent = message;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
         // Generate button - draw table row by row with animation
         document.getElementById('generateBtn').addEventListener('click', function() {
             // Check if at least one cell in first row is black
@@ -760,7 +787,7 @@
                 }
                 
                 if (!hasBlackCellInSmallTables) {
-                    showRedAlert('Click one or more grey cells in at least one of 8 small tables to turn it black.');
+                    showRedAlert('Click one or more gray cells in at least one of 8 small tables to turn these black.');
                     return;
                 }
             }
@@ -783,6 +810,12 @@
                 } else {
                     // All done, save data
                     saveGridData();
+                    
+                    // Show blue popup on first successful generation only
+                    if (!firstGenerationComplete) {
+                        firstGenerationComplete = true;
+                        showBlueAlert('Good work! Now You can click Settings to try other rules and table sizes.');
+                    }
                 }
             }
             
