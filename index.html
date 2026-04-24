@@ -57,7 +57,7 @@
         }
 
         .checkbox-container label {
-            font-size: 11px;
+            font-size: 14px;
             color: #666;
             cursor: pointer;
             margin: 0;
@@ -200,7 +200,7 @@
 
         .info-inline {
             color: #666;
-            font-size: 11px;
+            font-size: 14px;
             margin: 0;
             align-self: center;
         }
@@ -355,9 +355,10 @@
         
         <div class="controls">
             <div class="controls-row">
-                <button id="generateBtn">Generate</button>
-                <p class="info-inline">Click on cells in the first row to toggle them.</p>
+                
+                <p class="info-inline">Click on cells in the first row to change their color, then click Generate.</p>
                 <div class="settings-button-container">
+                    <button id="generateBtn">Generate</button>
                     <button id="clearBtn">Clear</button>
                     <button id="settingsBtn">Settings</button>
                 </div>
@@ -374,7 +375,7 @@
                         <button id="changeSizeBtn">Change Table Size</button>
                         <div class="checkbox-container">
                             <input type="checkbox" id="showPredecessors">
-                            <label for="showPredecessors">Show Predecessors</label>
+                            <label for="showPredecessors">Show numbers of black cells above each cell</label>
                         </div>
                     </div>
                     <div class="rules-container">
@@ -706,8 +707,64 @@
             localStorage.setItem(STORAGE_KEY, JSON.stringify(gridData));
         }
 
+        // Custom red alert function
+        function showRedAlert(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: #ffcccc;
+                border: 2px solid #cc0000;
+                color: #cc0000;
+                padding: 20px 30px;
+                font-size: 16px;
+                font-weight: bold;
+                border-radius: 8px;
+                z-index: 10000;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            `;
+            alertDiv.textContent = message;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+
         // Generate button - draw table row by row with animation
         document.getElementById('generateBtn').addEventListener('click', function() {
+            // Check if at least one cell in first row is black
+            let hasBlackCellInFirstRow = false;
+            for (let col = 0; col < COLS; col++) {
+                if (gridData[0][col] === 1) {
+                    hasBlackCellInFirstRow = true;
+                    break;
+                }
+            }
+            
+            if (!hasBlackCellInFirstRow) {
+                showRedAlert('Click at least one cell in first row to turn it black.');
+                return;
+            }
+            
+            // Check if Custom rule is selected and at least one small table has black cell in row 1
+            if (currentRule === 'custom') {
+                let hasBlackCellInSmallTables = false;
+                for (let tableIdx = 0; tableIdx < 8; tableIdx++) {
+                    if (smallTablesData[tableIdx][1][1] === 1) {
+                        hasBlackCellInSmallTables = true;
+                        break;
+                    }
+                }
+                
+                if (!hasBlackCellInSmallTables) {
+                    showRedAlert('Click one or more grey cells in at least one of 8 small tables to turn it black.');
+                    return;
+                }
+            }
+            
             let currentRow = 1;
             
             function drawNextRow(timestamp) {
