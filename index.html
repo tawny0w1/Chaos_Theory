@@ -531,6 +531,9 @@
 
             // Update cell display
             updateSmallCell(tableIdx, row, col);
+            
+            // Show red alert after clicking on grey cell
+            showRedAlert('Please, click Generate to check how updated rule works.');
         }
 
         // Update a single small cell display
@@ -713,7 +716,7 @@
             const alertDiv = document.createElement('div');
             alertDiv.style.cssText = `
                 position: fixed;
-                top: 50%;
+                top: 55%;
                 left: 50%;
                 transform: translate(-50%, -50%);
                 background-color: #ffcccc;
@@ -739,7 +742,7 @@
             const alertDiv = document.createElement('div');
             alertDiv.style.cssText = `
                 position: fixed;
-                top: 50%;
+                top: 55%;
                 left: 50%;
                 transform: translate(-50%, -50%);
                 background-color: #cce5ff;
@@ -915,6 +918,7 @@
             radio.addEventListener('change', function() {
                 currentRule = this.value;
                 applyCurrentRule();
+                showRedAlert('Please, click Generate to check how updated rule works.');
             });
         });
 
