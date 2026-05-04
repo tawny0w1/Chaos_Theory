@@ -418,6 +418,7 @@
         let smallTablesData = [];
         let currentRule = '22';
         let firstGenerationComplete = false;
+        let customRuleApplied = false;
 
         // Initialize grid from localStorage or create new
         function initializeGrid() {
@@ -522,18 +523,21 @@
             const tableIdx = parseInt(event.target.dataset.tableIndex);
             const row = parseInt(event.target.dataset.row);
             const col = parseInt(event.target.dataset.col);
+            if(customRuleApplied){    
+                // Toggle the value
+                smallTablesData[tableIdx][row][col] = smallTablesData[tableIdx][row][col] === 0 ? 1 : 0;
 
-            // Toggle the value
-            smallTablesData[tableIdx][row][col] = smallTablesData[tableIdx][row][col] === 0 ? 1 : 0;
+                // Save to localStorage
+                saveSmallTablesData();
 
-            // Save to localStorage
-            saveSmallTablesData();
-
-            // Update cell display
-            updateSmallCell(tableIdx, row, col);
+                // Update cell display
+                updateSmallCell(tableIdx, row, col);
             
-            // Show red alert after clicking on grey cell
-            showRedAlert('Please, click Generate to check how updated rule works.');
+                // Show red alert after clicking on grey cell
+                showRedAlert('Please, click Generate to check how updated rule works.');
+            } else {
+                showRedAlert('Custom Rule is not active. Please select Custom Rule to enable editing small tables.');
+            }       
         }
 
         // Update a single small cell display
@@ -563,6 +567,7 @@
             }
             saveSmallTablesData();
             renderSmallTables();
+            customRuleApplied = true;
         }
 
         // Apply Rule 22: Tables 0, 1, 2 middle cell (row 1, col 1) = 1
@@ -579,6 +584,7 @@
             smallTablesData[3][1][1] = 1;
             saveSmallTablesData();
             renderSmallTables();
+            customRuleApplied = false;
         }
 
         // Apply Rule 30: Tables 3, 4, 5, 6 middle cell (row 1, col 1) = 1
@@ -596,6 +602,7 @@
             smallTablesData[5][1][1] = 1;
             saveSmallTablesData();
             renderSmallTables();
+            customRuleApplied = false;
         }
 
         // Apply current rule
